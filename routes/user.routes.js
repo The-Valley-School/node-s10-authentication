@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 // Modelos
 const { User } = require("../models/User.js");
 const { Car } = require("../models/Car.js");
+const { isAuth } = require("../middlewares/auth.middleware.js");
 
 // Router propio de usuarios
 const router = express.Router();
@@ -89,9 +90,14 @@ router.post("/", async (req, res, next) => {
 
 // Para elimnar usuarios
 // CRUD: DELETE
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:id", isAuth, async (req, res, next) => {
   try {
     const id = req.params.id;
+
+    if (req.user.id !== id && req.user.email !== "admin@gmail.com") {
+      return res.status(401).json({ error: "No tienes autorización para realizar esta operación" });
+    }
+
     const userDeleted = await User.findByIdAndDelete(id);
     if (userDeleted) {
       res.json(userDeleted);
@@ -104,9 +110,14 @@ router.delete("/:id", async (req, res, next) => {
 });
 
 // CRUD: UPDATE
-router.put("/:id", async (req, res, next) => {
+router.put("/:id", isAuth, async (req, res, next) => {
   try {
     const id = req.params.id;
+
+    if (req.user.id !== id && req.user.email !== "admin@gmail.com") {
+      return res.status(401).json({ error: "No tienes autorización para realizar esta operación" });
+    }
+
     const userToUpdate = await User.findById(id);
     if (userToUpdate) {
       Object.assign(userToUpdate, req.body);
