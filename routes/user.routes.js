@@ -38,12 +38,8 @@ router.get("/", async (req, res, next) => {
 // CRUD: READ
 router.get("/:id", async (req, res, next) => {
   try {
-    const objetoCorrupto = "{ 'name': ";
-    const objeto = JSON.parse(objetoCorrupto);
-    console.log(objeto);
-
     const id = req.params.id;
-    const user = await User.findById(id);
+    const user = await User.findById(id).select("+password");
 
     if (user) {
       const temporalUser = user.toObject();

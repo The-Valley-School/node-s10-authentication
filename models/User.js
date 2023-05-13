@@ -1,9 +1,27 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 const Schema = mongoose.Schema;
 
 // Creamos el schema del usuario
 const userSchema = new Schema(
   {
+    email: {
+      type: String,
+      trim: true,
+      required: true,
+      unique: true,
+      validate: {
+        validator: validator.isEmail,
+        message: "Email incorrecto",
+      },
+    },
+    password: {
+      type: String,
+      trim: true,
+      required: true,
+      minLength: [8, "La contraseña debe tener al menos 8 caracteres"],
+      select: false,
+    },
     firstName: {
       type: String,
       required: true,
