@@ -1,5 +1,6 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+const { generateToken } = require("../utils/token");
 
 // Modelos
 const { User } = require("../models/User.js");
@@ -159,7 +160,10 @@ router.post("/login", async (req, res, next) => {
       const userWithoutPass = user.toObject();
       delete userWithoutPass.password;
 
-      return res.status(200).json(userWithoutPass);
+      // Generamos token JWT
+      const jwtToken = generateToken(user._id, user.email);
+
+      return res.status(200).json({ token: jwtToken });
     } else {
       return res.status(401).json({ error: "Email y/o contraseña incorrectos" });
     }

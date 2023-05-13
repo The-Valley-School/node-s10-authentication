@@ -1,28 +1,25 @@
-const bcrypt = require("bcrypt");
 const { User } = require("../models/User");
+const { verifyToken } = require("../utils/token");
 
 const isAuth = async (req, res, next) => {
   try {
-    const { email, password } = req.headers;
+    const token = req.headers.authorization?.replace("Bearer ", "");
 
-    if (!email || !password) {
-      return res.status(401).json({ error: "No tienes autorización para realizar esta operación" });
+    if (!token) {
+      throw new Error({ error: "No tienes autorización para realizar esta operación" });
     }
 
-    const user = await User.findOne({ email }).select("+password");
+    // Descodificamos el token
+    const decodedInfo = verifyToken(token);
+    const user = await User.findOne({ email: decodedInfo.userEmail }).select("+password");
     if (!user) {
-      return res.status(401).json({ error: "No tienes autorización para realizar esta operación" });
-    }
-
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      return res.status(401).json({ error: "No tienes autorización para realizar esta operación" });
+      throw new Error({ error: "No tienes autorización para realizar esta operación" });
     }
 
     req.user = user;
     next();
   } catch (error) {
-    next(error);
+    return res.status(401).json(error);
   }
 };
 
