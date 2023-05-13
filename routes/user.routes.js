@@ -1,4 +1,5 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
 
 // Modelos
 const { User } = require("../models/User.js");
@@ -106,9 +107,14 @@ router.delete("/:id", async (req, res, next) => {
 router.put("/:id", async (req, res, next) => {
   try {
     const id = req.params.id;
-    const userUpdated = await User.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
-    if (userUpdated) {
-      res.json(userUpdated);
+    const userToUpdate = await User.findById(id);
+    if (userToUpdate) {
+      Object.assign(userToUpdate, req.body);
+      await userToUpdate.save();
+      // Quitamos pass de la respuesta
+      const userToSend = userToUpdate.toObject();
+      delete userToSend.password;
+      res.json(userToSend);
     } else {
       res.status(404).json({});
     }
@@ -136,7 +142,8 @@ router.post("/login", async (req, res, next) => {
     }
 
     // Comprueba la pass
-    if (user.password === password) {
+    const match = await bcrypt.compare(password, user.password);
+    if (match) {
       // Quitamos password de la respuesta
       const userWithoutPass = user.toObject();
       delete userWithoutPass.password;
