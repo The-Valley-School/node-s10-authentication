@@ -1,5 +1,4 @@
 {
-  "buildCommand": "npm run build:ssr",
   "builds": [
     {
       "src": "index.js",
